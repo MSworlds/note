@@ -1,0 +1,38 @@
+mount -t nfs  192.168.1.227:/share/gx_apps_232/gx_apps   /gx_apps 
+
+
+mount -t nfs  192.168.1.227:/share/gx_apps_235/gx_apps   /gx_apps 
+
+
+ docker run -p 3308:3306 --name 235mysqlbackup -v /usr/dockerMysql/conf:/etc/mysql/conf.d -v /usr/dockerMysql/logs:/logs -v /usr/dockerMysql/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -d 235mysqlbackup_3308:5.6
+
+
+
+
+
+ 主库
+log-bin = mysql-bin
+server-id =1
+innodb-file-per-table =ON
+skip_name_resolve=ON
+
+
+
+show GLOBAL   VARIABLES  like  '%log%'
+show GLOBAL   VARIABLES  like  '%server%'
+show   master LOGS
+
+
+GRANT REPLICATION SLAVE,RELOAD,SUPER ON *.*  TO backup@’192.168.1.227’  IDENTIFIED BY ‘123456’;
+show master status
+
+从库
+relay-log=relay-log
+relay-log-index=relay-log.index
+server-id=2
+innodb_file_per_table=ON
+skip_name_resolve=ON
+
+
+ change master to master_host='192.168.1.235', master_user='backup', master_password='123456',master_log_file='mysql-bin.000001',master_log_pos=0;
+ START SLAVE;
